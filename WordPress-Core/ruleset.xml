@@ -28,6 +28,16 @@
 		<severity>0</severity>
 	</rule>
 
+	<!-- https://make.wordpress.org/core/handbook/inline-documentation-standards/php-documentation-standards/#5-inline-comments -->
+	<rule ref="Squiz.Commenting.InlineComment" />
+	<rule ref="Squiz.Commenting.BlockComment" />
+
+	<!-- https://make.wordpress.org/core/handbook/inline-documentation-standards/php-documentation-standards/#1-functions-and-class-methods -->
+	<rule ref="Squiz.Commenting.FunctionComment">
+		<exclude name="Squiz.Commenting.FunctionComment.MissingReturn"/>
+	</rule>
+	<rule ref="Squiz.Commenting.DocCommentAlignment" />
+
 	<rule ref="Generic.Files.LineEndings">
 		<properties>
 			<property name="eolChar" value="\n"/>

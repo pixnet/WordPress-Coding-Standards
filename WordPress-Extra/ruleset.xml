@@ -7,4 +7,10 @@
 	<rule ref="WordPress.XSS.EscapeOutput"/>
 	<rule ref="WordPress.PHP.DiscouragedFunctions"/>
 
+	<rule ref="Generic.Commenting.Todo"/>
+	<rule ref="Generic.Commenting.FixMe"/>
+	<rule ref="Squiz.Commenting.ClassComment" />
+	<rule ref="Squiz.Commenting.EmptyCatchComment" />
+	<rule ref="Squiz.Commenting.FunctionCommentThrowTag" />
+
 </ruleset>
