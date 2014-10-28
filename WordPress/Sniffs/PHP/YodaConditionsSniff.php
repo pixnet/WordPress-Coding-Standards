@@ -1,5 +1,8 @@
 <?php
 /**
+ * vim: set tabstop=4 softtabstop=4:
+ */
+/**
  * Enforces Yoda conditional statements , based upon Squiz code
  *
  * PHP version 5
