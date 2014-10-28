@@ -59,7 +59,7 @@ class WordPress_Sniffs_PHP_YodaConditionsSniff implements PHP_CodeSniffer_Sniff
 			$string .= $tokens[$i]['content'];
 		}
 
-		preg_match_all( '#((!=|==)=?\s*(true|false|[\'"0-9])\b)#si', $string, $matches );
+        preg_match_all( '#(\$\S*)\s*(!==|===|!=|==)\s*(true|false|null|-?\s*[0-9]+\.?[0-9]*|[\'"].*[\'"])#si', $string, $matches );
 		foreach ( $matches[0] as $match ) {
 			$error = 'Found "' . $match . '". Use Yoda Condition checks, you must';
 			$phpcsFile->addError($error, $stackPtr);
