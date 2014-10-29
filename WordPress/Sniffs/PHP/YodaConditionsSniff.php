@@ -64,7 +64,7 @@ class WordPress_Sniffs_PHP_YodaConditionsSniff implements PHP_CodeSniffer_Sniff
 
         for ($i = 0; $i < $matches_size; $i++) {
             $error = sprintf(
-                "Found \"%s\". Use Yoda condition, like \"%s %s %s\"",
+                "Found «%s». Use Yoda condition, like «%s %s %s»",
                 $matches[0][$i],
                 $matches[3][$i],
                 $matches[2][$i],
