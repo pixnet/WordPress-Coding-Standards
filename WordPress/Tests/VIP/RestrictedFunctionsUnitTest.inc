@@ -1,36 +1,84 @@
 <?php
 
-switch_to_blog( $blogid ); // bad
+switch_to_blog( $blogid ); // Error.
 
-eval( 'some_code' ); // bad
+file_get_contents( $url ); // Warning.
 
-create_function( 'foo', 'bar(foo);' ); // bad
+vip_wp_file_get_contents( $url ); // Warning.
 
-file_get_contents( $url ); // bad
+wp_remote_get( $url ); // Warning.
 
-vip_wp_file_get_contents( $url ); // bad
 
-wp_remote_get( $url ); // bad
 
-$ch = curl_init(); // bad
 
-curl_close( $ch ); // bad
 
-extract( array( 'a' => 1 ) ); // bad
+// Empty line - function moved to another sniff.
 
-add_role( 'test' ); // bad
+add_role( 'test' ); // Error.
 
-array_pop( $array ); // ok
+array_pop( $array ); // Ok.
 
 class Foo {
-	function add_role() {} // ok
+	function add_role() {} // Ok.
 }
 class Bar {
-	static function add_role() {} // ok
+	static function add_role() {} // Ok.
 }
 $x = new Foo();
-$x->add_role(); // ok
-$y = Bar::add_role(); // ok
-\SomeNamespace\add_role(); // ok
+$x->add_role(); // Ok.
+$y = Bar::add_role(); // Ok.
+\SomeNamespace\add_role(); // Ok.
 
-\add_role(); // bad
+\add_role(); // Error.
+
+wpcom_vip_get_term_link( $term ); // Error.
+
+get_page_by_path( $path ); // Error.
+
+get_page_by_title( $page_title ); // Error.
+
+wpcom_vip_get_term_by( $field, $value, $taxonomy ); // Error.
+
+wpcom_vip_get_category_by_slug( $slug ); // Error.
+
+url_to_postid( $url ); // Error.
+
+attachment_url_to_postid( $url ); // Error.
+wpcom_vip_attachment_url_to_postid( $url ); // Ok.
+
+get_tag_link(); // Ok.
+get_category_link(); // Ok.
+get_cat_ID(); // Ok.
+url_to_post_id(); // Error.
+
+get_posts(); // Warning.
+wp_get_recent_posts(); // Warning.
+
+get_children(); // Warning.
+
+
+
+
+term_exists(); // Error.
+count_user_posts(); // Error.
+wp_old_slug_redirect(); // Error.
+get_adjacent_post(); // Error.
+get_previous_post(); // Error.
+get_next_post(); // Error.
+
+
+
+
+get_previous_post_link(); // Error.
+get_next_post_link(); // Error.
+get_intermediate_image_sizes(); // Error.
+
+wp_redirect(); // Warning.
+wp_is_mobile(); // Error.
+
+setcookie( 'cookie[three]', 'cookiethree' ); // Warning.
+
+get_user_meta(); // Error.
+update_user_meta(); // Error.
+delete_user_meta(); // Error.
+add_user_meta(); // Error.

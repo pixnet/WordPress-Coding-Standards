@@ -1,82 +1,127 @@
 <?php
 /**
- * vim: set tabstop=4 softtabstop=4:
- */
-/**
- * Enforces Yoda conditional statements , based upon Squiz code
+ * WordPress Coding Standard.
  *
- * PHP version 5
- *
- * @category PHP
- * @package  PHP_CodeSniffer
- * @author   Matt Robinson
+ * @package WPCS\WordPressCodingStandards
+ * @link    https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards
+ * @license https://opensource.org/licenses/MIT MIT
  */
 
+namespace WordPress\Sniffs\PHP;
+
+use WordPress\Sniff;
+use PHP_CodeSniffer_Tokens as Tokens;
+
 /**
- * Squiz_Sniffs.
+ * Enforces Yoda conditional statements.
  *
- * @category PHP
- * @package  PHP_CodeSniffer
- * @author   John Godley <john@urbangiraffe.com>
- * @author   Greg Sherwood <gsherwood@squiz.net>
- * @author   Marc McIntyre <mmcintyre@squiz.net>
+ * @link    https://make.wordpress.org/core/handbook/best-practices/coding-standards/php/#yoda-conditions
+ *
+ * @package WPCS\WordPressCodingStandards
+ *
+ * @since   0.3.0
+ * @since   0.12.0 This class now extends WordPress_Sniff.
+ * @since   0.13.0 Class name changed: this class is now namespaced.
  */
-class WordPress_Sniffs_PHP_YodaConditionsSniff implements PHP_CodeSniffer_Sniff
-{
+class YodaConditionsSniff extends Sniff {
+
+	/**
+	 * The tokens that indicate the start of a condition.
+	 *
+	 * @since 0.12.0
+	 *
+	 * @var array
+	 */
+	protected $condition_start_tokens;
 
 	/**
 	 * Returns an array of tokens this test wants to listen for.
 	 *
 	 * @return array
 	 */
-	public function register()
-	{
+	public function register() {
+
+		$starters                       = Tokens::$booleanOperators;
+		$starters                      += Tokens::$assignmentTokens;
+		$starters[ T_CASE ]             = T_CASE;
+		$starters[ T_RETURN ]           = T_RETURN;
+		$starters[ T_INLINE_THEN ]      = T_INLINE_THEN;
+		$starters[ T_INLINE_ELSE ]      = T_INLINE_ELSE;
+		$starters[ T_SEMICOLON ]        = T_SEMICOLON;
+		$starters[ T_OPEN_PARENTHESIS ] = T_OPEN_PARENTHESIS;
+
+		$this->condition_start_tokens = $starters;
+
 		return array(
-			T_IF,
-			T_ELSEIF,
+			T_IS_EQUAL,
+			T_IS_NOT_EQUAL,
+			T_IS_IDENTICAL,
+			T_IS_NOT_IDENTICAL,
 		);
 
-	}//end register()
-
+	}
 
 	/**
 	 * Processes this test, when one of its tokens is encountered.
 	 *
-	 * @param PHP_CodeSniffer_File	$phpcsFile The file being scanned.
-	 * @param int					$stackPtr  The position of the current token in the
-	 *											stack passed in $tokens.
+	 * @param int $stackPtr The position of the current token in the stack.
 	 *
 	 * @return void
 	 */
-	public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
-	{
-		$tokens = $phpcsFile->getTokens();
+	public function process_token( $stackPtr ) {
 
-		$openBracket  = $tokens[$stackPtr]['parenthesis_opener'];
-		$closeBracket = $tokens[$stackPtr]['parenthesis_closer'];
-		$string = '';
-		for ($i = ($openBracket + 1); $i < $closeBracket; $i++) {
-			$string .= $tokens[$i]['content'];
+		$start = $this->phpcsFile->findPrevious( $this->condition_start_tokens, $stackPtr, null, false, null, true );
+
+		$needs_yoda = false;
+
+		// Note: going backwards!
+		for ( $i = $stackPtr; $i > $start; $i-- ) {
+
+			// Ignore whitespace.
+			if ( isset( Tokens::$emptyTokens[ $this->tokens[ $i ]['code'] ] ) ) {
+				continue;
+			}
+
+			// If this is a variable or array, we've seen all we need to see.
+			if ( T_VARIABLE === $this->tokens[ $i ]['code']
+				|| T_CLOSE_SQUARE_BRACKET === $this->tokens[ $i ]['code']
+			) {
+				$needs_yoda = true;
+				break;
+			}
+
+			// If this is a function call or something, we are OK.
+			if ( T_CLOSE_PARENTHESIS === $this->tokens[ $i ]['code'] ) {
+				return;
+			}
 		}
 
-        $regex = '#(\$\S+|\w+\(.*\))\s*(!==|===|!=|==)\s*(true|false|null|-?\s*[0-9]+\.?[0-9]*|[\'"][^\$]*[\'"])#si';
-        preg_match_all($regex, $string, $matches);
-        $matches_size = count($matches[0]);
-
-        for ($i = 0; $i < $matches_size; $i++) {
-            $error = sprintf(
-                "Found «%s». Use Yoda condition, like «%s %s %s»",
-                $matches[0][$i],
-                $matches[3][$i],
-                $matches[2][$i],
-                $matches[1][$i]
-            );
-			$phpcsFile->addError($error, $stackPtr);
+		if ( ! $needs_yoda ) {
+			return;
 		}
 
-	}//end process()
+		// Check if this is a var to var comparison, e.g.: if ( $var1 == $var2 ).
+		$next_non_empty = $this->phpcsFile->findNext( Tokens::$emptyTokens, ( $stackPtr + 1 ), null, true );
 
+		if ( isset( Tokens::$castTokens[ $this->tokens[ $next_non_empty ]['code'] ] ) ) {
+			$next_non_empty = $this->phpcsFile->findNext( Tokens::$emptyTokens, ( $next_non_empty + 1 ), null, true );
+		}
 
-}//end class
+		if ( in_array( $this->tokens[ $next_non_empty ]['code'], array( T_SELF, T_PARENT, T_STATIC ), true ) ) {
+			$next_non_empty = $this->phpcsFile->findNext(
+				array_merge( Tokens::$emptyTokens, array( T_DOUBLE_COLON ) ),
+				( $next_non_empty + 1 ),
+				null,
+				true
+			);
+		}
 
-?>
+		if ( T_VARIABLE === $this->tokens[ $next_non_empty ]['code'] ) {
+			return;
+		}
+
+		$this->phpcsFile->addError( 'Use Yoda Condition checks, you must.', $stackPtr, 'NotYoda' );
+
+	} // End process().
+
+} // End class.

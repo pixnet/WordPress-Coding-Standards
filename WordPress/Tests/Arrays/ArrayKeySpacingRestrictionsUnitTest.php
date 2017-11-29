@@ -1,43 +1,36 @@
 <?php
 /**
- * A sniff unit test checks a .inc file for expected violations of a single
- * coding standard. Expected errors and warnings are stored in this class.
+ * Unit test class for WordPress Coding Standard.
  *
- * @category  PHP
- * @package   PHP_CodeSniffer
- * @author    Shady Sharaf <shady@x-team.com>
+ * @package WPCS\WordPressCodingStandards
+ * @link    https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards
+ * @license https://opensource.org/licenses/MIT MIT
  */
-class WordPress_Tests_Arrays_ArrayKeySpacingRestrictionsUnitTest extends AbstractSniffUnitTest
-{
+
+namespace WordPress\Tests\Arrays;
+
+use PHP_CodeSniffer\Tests\Standards\AbstractSniffUnitTest;
+
+/**
+ * Unit test class for the ArrayKeySpacingRestrictions sniff.
+ *
+ * @package WPCS\WordPressCodingStandards
+ *
+ * @since   0.3.0
+ * @since   0.13.0 Class name changed: this class is now namespaced.
+ */
+class ArrayKeySpacingRestrictionsUnitTest extends AbstractSniffUnitTest {
 
 	/**
 	 * Returns the lines where errors should occur.
 	 *
-	 * The key of the array should represent the line number and the value
-	 * should represent the number of errors that should occur on that line.
-	 *
-	 * @return array(int => int)
+	 * @return array <int line number> => <int number of errors>
 	 */
-	public function getErrorList()
-	{
-		return array();
-	}//end getErrorList()
-
-
-	/**
-	 * Returns the lines where warnings should occur.
-	 *
-	 * The key of the array should represent the line number and the value
-	 * should represent the number of warnings that should occur on that line.
-	 *
-	 * @return array(int => int)
-	 */
-	public function getWarningList()
-	{
+	public function getErrorList() {
 		return array(
-			4 => 1,
-			5 => 1,
-			6 => 1,
+			4  => 1,
+			5  => 1,
+			6  => 1,
 			11 => 1,
 			12 => 1,
 			13 => 1,
@@ -49,7 +42,16 @@ class WordPress_Tests_Arrays_ArrayKeySpacingRestrictionsUnitTest extends Abstrac
 			29 => 1,
 			31 => 1,
 		);
-	}//end getWarningList()
+	}
 
+	/**
+	 * Returns the lines where warnings should occur.
+	 *
+	 * @return array <int line number> => <int number of warnings>
+	 */
+	public function getWarningList() {
+		return array();
 
-}//end class
+	}
+
+} // End class.

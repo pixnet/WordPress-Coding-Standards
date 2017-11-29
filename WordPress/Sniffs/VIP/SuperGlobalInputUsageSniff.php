@@ -1,72 +1,66 @@
 <?php
 /**
- * Flag any usage of super global input var ( _GET / _POST / _REQUEST )
+ * WordPress Coding Standard.
  *
- * @category PHP
- * @package  PHP_CodeSniffer
- * @author   Shady Sharaf <shady@x-team.com>
- * @link     https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/issues/79
+ * @package WPCS\WordPressCodingStandards
+ * @link    https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards
+ * @license https://opensource.org/licenses/MIT MIT
  */
-class WordPress_Sniffs_VIP_SuperGlobalInputUsageSniff implements PHP_CodeSniffer_Sniff
-{
+
+namespace WordPress\Sniffs\VIP;
+
+use WordPress\Sniff;
+
+/**
+ * Flag any usage of super global input var ( _GET / _POST / etc. ).
+ *
+ * @link    https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/issues/79
+ *
+ * @package WPCS\WordPressCodingStandards
+ *
+ * @since   0.3.0
+ * @since   0.4.0  This class now extends WordPress_Sniff.
+ * @since   0.13.0 Class name changed: this class is now namespaced.
+ */
+class SuperGlobalInputUsageSniff extends Sniff {
 
 	/**
 	 * Returns an array of tokens this test wants to listen for.
 	 *
 	 * @return array
 	 */
-	public function register()
-	{
+	public function register() {
 		return array(
-				T_VARIABLE,
-			   );
+			T_VARIABLE,
+		);
 
-	}//end register()
-
+	}
 
 	/**
 	 * Processes this test, when one of its tokens is encountered.
 	 *
-	 * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
-	 * @param int                  $stackPtr  The position of the current token
-	 *                                        in the stack passed in $tokens.
+	 * @param int $stackPtr The position of the current token in the stack.
 	 *
 	 * @return void
 	 */
-	public function process( PHP_CodeSniffer_File $phpcsFile, $stackPtr )
-	{
-		$tokens = $phpcsFile->getTokens();
-
-		// Check for global input variable
-		if ( ! in_array( $tokens[$stackPtr]['content'], array( '$_GET', '$_POST', '$_REQUEST' ) ) )
-			return;
-
-		$varName = $tokens[$stackPtr]['content'];
-
-		// If we're overriding a superglobal with an assignment, no need to test
-		$semicolon_position = $phpcsFile->findNext( array( T_SEMICOLON ), $stackPtr + 1, null, null, null, true );
-		$assignment_position = $phpcsFile->findNext( array( T_EQUAL ), $stackPtr + 1, null, null, null, true );
-		if ( $semicolon_position !== false && $assignment_position !== false && $assignment_position < $semicolon_position ) {
+	public function process_token( $stackPtr ) {
+		// Check for global input variable.
+		if ( ! in_array( $this->tokens[ $stackPtr ]['content'], $this->input_superglobals, true ) ) {
 			return;
 		}
 
-		// Check for whitelisting comment
-		$currentLine = $tokens[$stackPtr]['line'];
-		$nextPtr = $stackPtr;
-		while ( isset( $tokens[$nextPtr + 1]['line'] ) && $tokens[$nextPtr + 1]['line'] == $currentLine ) {
-			$nextPtr++;
-			// Do nothing, we just want the last token of the line
+		$varName = $this->tokens[ $stackPtr ]['content'];
+
+		// If we're overriding a superglobal with an assignment, no need to test.
+		if ( $this->is_assignment( $stackPtr ) ) {
+			return;
 		}
 
-		$is_whitelisted = ( 
-			$tokens[$nextPtr]['code'] === T_COMMENT 
-			&& 
-			preg_match( '#input var okay#i', $tokens[$nextPtr]['content'] ) > 0
-			);
-
-		if ( ! $is_whitelisted ) {
-			$phpcsFile->addWarning( 'Detected access of super global var %s, probably need manual inspection.', $stackPtr, null, array( $varName ) );
+		// Check for whitelisting comment.
+		if ( ! $this->has_whitelist_comment( 'input var', $stackPtr ) ) {
+			$this->phpcsFile->addWarning( 'Detected access of super global var %s, probably needs manual inspection.', $stackPtr, 'AccessDetected', array( $varName ) );
 		}
-	}//end process()
 
-}//end class
+	}
+
+} // End class.

@@ -1,57 +1,65 @@
 <?php
 /**
- * WordPress_Sniffs_WP_Enqueued_Resources_Sniff
+ * WordPress Coding Standard.
  *
- * Makes sure scripts and styles are enqueued and not explicitly echo'd
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- * @author    Shady Sharaf <shady@x-team.com>
+ * @package WPCS\WordPressCodingStandards
+ * @link    https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards
+ * @license https://opensource.org/licenses/MIT MIT
  */
-class WordPress_Sniffs_WP_EnqueuedResourcesSniff implements PHP_CodeSniffer_Sniff
-{
 
-    /**
-     * Returns an array of tokens this test wants to listen for.
-     *
-     * @return array
-     */
-    public function register()
-    {
-        return array(
-                T_CONSTANT_ENCAPSED_STRING,
-                T_DOUBLE_QUOTED_STRING,
-                T_INLINE_HTML,
-               );
+namespace WordPress\Sniffs\WP;
 
-    }//end register()
+use WordPress\Sniff;
+use PHP_CodeSniffer_Tokens as Tokens;
 
+/**
+ * Makes sure scripts and styles are enqueued and not explicitly echo'd.
+ *
+ * @link    https://vip.wordpress.com/documentation/vip-go/code-review-blockers-warnings-notices/#inline-resources
+ *
+ * @package WPCS\WordPressCodingStandards
+ *
+ * @since   0.3.0
+ * @since   0.12.0 This class now extends WordPress_Sniff.
+ * @since   0.13.0 Class name changed: this class is now namespaced.
+ */
+class EnqueuedResourcesSniff extends Sniff {
 
-    /**
-     * Processes this test, when one of its tokens is encountered.
-     *
-     * @param PHP_CodeSniffer_File $phpcsFile The file being scanned.
-     * @param int                  $stackPtr  The position of the current token
-     *                                        in the stack passed in $tokens.
-     *
-     * @return void
-     */
-    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
-    {
-        $tokens = $phpcsFile->getTokens();
-        $token  = $tokens[$stackPtr];
+	/**
+	 * Returns an array of tokens this test wants to listen for.
+	 *
+	 * @return array
+	 */
+	public function register() {
+		return Tokens::$textStringTokens;
+	}
 
-        if ( preg_match( '#rel=[\'"]?stylesheet[\'"]?#', $token['content'], $matches ) > 0 ) {
-            $phpcsFile->addError( 'Stylesheets must be registered/enqueued via wp_enqueue_style', $stackPtr );
-            return;
-        }
+	/**
+	 * Processes this test, when one of its tokens is encountered.
+	 *
+	 * @param int $stackPtr The position of the current token in the stack.
+	 *
+	 * @return void
+	 */
+	public function process_token( $stackPtr ) {
+		$token = $this->tokens[ $stackPtr ];
 
-        if ( preg_match( '#<script[^>]*(?<=src=)#', $token['content'], $matches ) > 0 ) {
-            $phpcsFile->addError( 'Scripts must be registered/enqueued via wp_enqueue_script', $stackPtr );
-            return;
-        }
+		if ( preg_match( '#rel=\\\\?[\'"]?stylesheet\\\\?[\'"]?#', $token['content'] ) > 0 ) {
+			$this->phpcsFile->addError(
+				'Stylesheets must be registered/enqueued via wp_enqueue_style',
+				$stackPtr,
+				'NonEnqueuedStylesheet'
+			);
+		}
 
-    }//end process()
+		if ( preg_match( '#<script[^>]*(?<=src=)#', $token['content'] ) > 0 ) {
+			$this->phpcsFile->addError(
+				'Scripts must be registered/enqueued via wp_enqueue_script',
+				$stackPtr,
+				'NonEnqueuedScript'
+			);
+		}
 
+	} // End process().
 
-}//end class
+} // End class.
